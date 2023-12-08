@@ -12,7 +12,7 @@ export default function Counter() {
         class="border-0 border-b-4 border-zinc-200 focus:border-blue-400 outline-none bg-transparent text-3xl w-32 min-w-max inline-block capitalize"
         onInput={(ev) => {
           const input = ev.currentTarget.textContent;
-          if (input) {
+          if (input !== null) {
             output.value = encode(input);
           }
         }}
