@@ -1,5 +1,5 @@
 /**
- * Determine whether a number is even.
+ * Determine whether a character's value is even.
  */
 export function isEven(char: string): boolean {
   return toValue(char) % 2 === 0;
@@ -68,70 +68,73 @@ export function sanitizeWord(input: string): string {
  * @returns the encoded word
  */
 export function encodeWord(word: string): string {
-  const SUB = "\x1A"; // makes fixup easier
-
   const sanitized = sanitizeWord(word);
 
   // 1. Substitution Step
   let substituted = "";
   for (let i = 0; i < sanitized.length; i += 2) {
-    const pair = sanitized.slice(i, i + 2);
+    const [first, second] = [sanitized[i], sanitized[i + 1]];
 
-    let value = toValue(pair[0]);
-    if (pair.length === 2) {
-      value += toValue(pair[1]);
-    }
-    if (value > 26) {
-      value -= 26;
-    }
+    let value = toValue(first);
+    if (second) value += toValue(second);
 
-    substituted += toChar(value);
+    substituted += toChar(value > 26 ? value - 26 : value);
   }
 
   // 2. Pairwise Fixup Step
   // 2a. Duplicate vowels
-  substituted = substituted
-    .replaceAll("aa", "ar")
-    .replaceAll("ee", "er")
-    .replaceAll("ii", "ir")
-    .replaceAll("oo", "or")
-    .replaceAll("uu", "ur")
-    .concat(SUB);
+  // regex makes it easy to replace duplicate vowels
+  // it doesn't replace overlapping duples like "III"
+  substituted = substituted.replaceAll(/([aeiou])\1/g, "$1r");
 
   // 2b. Consecutive consonants
-  let fixedup = "";
-  for (let i = 0; i < substituted.length - 1; i++) {
-    const first = substituted[i];
-    const second = substituted[i + 1];
+  let encoded = "";
+  for (let i = 0; i < substituted.length; i++) {
+    const [first, second] = [substituted[i], substituted[i + 1]];
 
     // we always want to add the first character
-    fixedup += first;
+    encoded += first;
 
-    if (!isConsonant(first) || !isConsonant(second) || second == SUB) {
+    // we only need an additional character if the first and second are consonants
+    // we also don't want to add a character if we have reached the end of the string
+    if (!isConsonant(first) || !isConsonant(second) || second === undefined) {
       continue;
     }
 
     // two consecutive consonants
+    // for those we need to add a vowel
+    // the vowel depends on the values of the two consonants
     switch (true) {
       case isEven(first) && isEven(second):
-        fixedup += "a";
+        encoded += "a";
         break;
       case isEven(first) && !isEven(second):
-        fixedup += "e";
+        encoded += "e";
         break;
       case !isEven(first) && isEven(second):
-        fixedup += "u";
+        encoded += "u";
         break;
       case !isEven(first) && !isEven(second):
-        fixedup += "o";
+        encoded += "o";
         break;
     }
   }
 
-  return fixedup;
+  return encoded;
 }
 
+/**
+ * Encode a full string into Iovah.
+ * We use regular expressions to replace all letter sequences in the input.
+ * Numbers and other characters are left untouched.
+ *
+ * @param input is the string to encode
+ * @returns an encoded version of the provided string
+ */
 export function encode(input: string): string {
+  // the Letter character class matches all Unicode letters
+  // this is how we distinguish words from other characters
+  // the encoding step might strip out non-Latin letters
   return input.replaceAll(/\p{Letter}+/gu, (word) => {
     const encoded = encodeWord(word);
     return encoded;
