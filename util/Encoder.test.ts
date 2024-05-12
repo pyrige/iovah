@@ -181,6 +181,31 @@ Deno.test("encodeWord handles individual words", () => {
     encodeWord("Äußerst"),
     "fanekut",
   );
+
+  assertEquals(
+    encodeWord("es"),
+    "ix",
+  );
+
+  assertEquals(
+    encodeWord("da"),
+    "e",
+  );
+
+  assertEquals(
+    encodeWord("JA"),
+    "ik",
+  );
+
+  assertEquals(
+    encodeWord("dU"),
+    "y",
+  );
+
+  assertEquals(
+    encodeWord("je"),
+    "o",
+  );
 });
 
 Deno.test("encode handles full sentences", () => {

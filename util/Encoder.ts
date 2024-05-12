@@ -120,6 +120,12 @@ export function encodeWord(word: string): string {
     }
   }
 
+  // if we end up with a single consonant, we prefix it with an "I"
+  // for the sake of pronunciation, we consider "Y" a vowel
+  if (encoded.length === 1 && isConsonant(encoded) && encoded !== "y") {
+    encoded = "i" + encoded;
+  }
+
   return encoded;
 }
 

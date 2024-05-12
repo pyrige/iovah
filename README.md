@@ -30,6 +30,7 @@ Iovah encoding is conducted in two steps:
 
 - Substitution
 - Pairwise fixup
+- Monoglyph expansion
 
 ### Substitution
 
@@ -91,3 +92,19 @@ For example, the string `"AAL"` is processed as such:
 
 1. `"AAL"` -> `"ARL"` (substitution)
 2. `"ARL"` -> `"ARAL"` (insertion)
+
+### Monoglyph expansion
+
+The third step addresses the rare edge case where, after substitution, only
+singular consonants are left, e.g. when replacing `"ES"` with just `"X"`. For
+the sake of retaining proper pronunciation, such consonants are prefixed by a
+singular `"I"`. During monoglyph expansion, the letter `"Y"` is considered a
+vowel and will not be expanded.
+
+#### Example
+
+```text
+"ES" = E(5) + S(19) = X(24) => "IX"
+"DU" = D(4) + U(21) = Y(25) => "Y"
+"JE" = J(10) + E(5) = O(15) => "O"
+```
